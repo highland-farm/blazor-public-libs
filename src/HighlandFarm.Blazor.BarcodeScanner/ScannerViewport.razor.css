@@ -1,0 +1,15 @@
+.viewport {
+  width: 100%;
+  height: auto;
+  display: flex;
+}
+
+.viewport ::deep canvas,
+::deep video {
+  width: 100%;
+}
+
+.viewport ::deep canvas.drawingBuffer,
+::deep video.drawingBuffer {
+  margin-left: -100%;
+}

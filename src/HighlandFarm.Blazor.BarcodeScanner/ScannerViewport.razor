@@ -1,0 +1,72 @@
+﻿@inject IJSRuntime IJSRuntime
+@implements IAsyncDisposable
+
+<div id="@ViewportId" class="viewport" @ref="ViewportElem"></div>
+
+@code {
+    [Parameter] public bool Started { get; set; } = false;
+    [Parameter] public bool Visible { get; set; } = true;
+
+    private string ViewportId = $"e{Guid.NewGuid().ToString("N")}";
+    private ElementReference ViewportElem;
+
+    private bool _started;
+    private bool _visible;
+
+    private SimpleQuaggaInterop Scanner;
+
+    public async Task<string> ScanCodeAsync()
+    {
+        if (Scanner == null)
+            return null;
+        return await Scanner.ScanCode();
+    }
+
+    protected override void OnInitialized()
+    {
+        _started = Started;
+        _visible = Visible;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_visible != Visible)
+        {
+            _visible = Visible;
+            if (Visible)
+                await Scanner.Show();
+            else
+                await Scanner.Hide();
+        }
+
+        if (_started != Started)
+        {
+            _started = Started;
+            if (Started)
+                await Scanner.Start();
+            else
+                await Scanner.Stop();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Scanner = new SimpleQuaggaInterop(IJSRuntime);
+            await Scanner.Init(ViewportElem);
+
+            // update if default JS state is different than initial params
+            if (!Visible)
+                await Scanner.Hide();
+            if (Started)
+                await Scanner.Start();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Scanner.DisposeAsync();
+        Scanner = null;
+    }
+}
