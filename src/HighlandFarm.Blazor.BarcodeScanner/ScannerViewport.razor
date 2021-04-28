@@ -4,16 +4,19 @@
 <div id="@ViewportId" class="viewport" @ref="ViewportElem"></div>
 
 @code {
-    [Parameter] public bool Started { get; set; } = false;
+    [Parameter] public bool AutoStart { get; set; } = false;
     [Parameter] public bool Visible { get; set; } = true;
 
     private string ViewportId = $"e{Guid.NewGuid().ToString("N")}";
     private ElementReference ViewportElem;
 
-    private bool _started;
     private bool _visible;
 
     private SimpleQuaggaInterop Scanner;
+
+    public async Task Start() => await Scanner.Start();
+
+    public async Task Stop() => await Scanner.Stop();
 
     public async Task<string> ScanCodeAsync()
     {
@@ -22,9 +25,15 @@
         return await Scanner.ScanCode();
     }
 
+    public async Task<byte[]> GetImageAsync()
+    {
+        if (Scanner == null)
+            return null;
+        return await Scanner.GetImage();
+    }
+
     protected override void OnInitialized()
     {
-        _started = Started;
         _visible = Visible;
     }
 
@@ -38,15 +47,6 @@
             else
                 await Scanner.Hide();
         }
-
-        if (_started != Started)
-        {
-            _started = Started;
-            if (Started)
-                await Scanner.Start();
-            else
-                await Scanner.Stop();
-        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -59,7 +59,7 @@
             // update if default JS state is different than initial params
             if (!Visible)
                 await Scanner.Hide();
-            if (Started)
+            if (AutoStart)
                 await Scanner.Start();
         }
     }

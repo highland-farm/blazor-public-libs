@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.5" />
+    <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="5.0.5" />
   </ItemGroup>
 
   <!-- Package settings -->

@@ -1,9 +1,9 @@
 ﻿@page "/"
 
 <p>
-    <button @onclick="ToggleStarted">@(Started ? "Stop Video" : "Start Video")</button>
+    <button @onclick="ToggleStartedAsync" disabled="@AwaitingStartStop">@(Started ? "Stop Video" : "Start Video")</button>
     <button @onclick="ToggleVisibility">@(Visible ? "Hide Video" : "Show Video")</button>
-    <button @onclick="ScanCodeAsync" disabled="@Scanning">Scan Code</button>
+    <button @onclick="ScanCodeAsync" disabled="@(Scanning || !Started)">Scan Code</button>
     <span>@Status</span>
 </p>
 <div
@@ -16,15 +16,52 @@
         background-color: gray;
       "
     >
-    <ScannerViewport @ref="Viewport" Started="@Started" Visible="@Visible" />
+    <ScannerViewport @ref="Viewport" Visible="@Visible" />
 </div>
+
+@foreach (var result in ScanResults)
+{
+    <div style="margin-top: 10px">
+        @(result.Code)<br />
+        <div style="width: 320px; display: flex">
+            <ScannedImage Image="@(result.Image)" Overlay="@(result.Overlay)" />
+        </div>
+    </div>
+}
 
 @code {
     private bool Started = false;
+    private bool AwaitingStartStop = false;
     private bool Visible = true;
-    private void ToggleStarted() => Started ^= true;
     private void ToggleVisibility() => Visible ^= true;
     private bool Scanning = false;
+
+    private class ScanResult
+    {
+        public string Code;
+        public byte[] Image;
+        public byte[] Overlay;
+    }
+    private List<ScanResult> ScanResults = new List<ScanResult>();
+
+    private async Task ToggleStartedAsync()
+    {
+        try
+        {
+            AwaitingStartStop = true;
+
+            if (Started)
+                await Viewport.Stop();
+            else
+                await Viewport.Start();
+
+            Started ^= true;
+        }
+        finally
+        {
+            AwaitingStartStop = false;
+        }
+    }
 
     private ScannerViewport Viewport;
     private string Status = "No scan yet.";
@@ -36,7 +73,10 @@
 
         try
         {
-            Status = await Viewport.ScanCodeAsync();
+            var code = Status = await Viewport.ScanCodeAsync();
+            var image = await Viewport.GetImageAsync();
+            var overlay = await Viewport.GetImageAsync();
+            ScanResults.Add(new ScanResult { Code = code, Image = image, Overlay = overlay });
         }
         catch (JSException ex)
         {

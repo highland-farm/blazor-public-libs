@@ -1,0 +1,40 @@
+@inject IJSRuntime IJSRuntime
+@implements IAsyncDisposable
+
+<img src="@ImageObjectUrl" style="width: 100%" onload="() => URL.revokeObjectURL(this.src)" />
+<img src="@OverlayObjectUrl" style="width: 100%; margin-left: -100%" onload="() => URL.revokeObjectURL(this.src)" />
+
+@code {
+    [Parameter] public string ContentType { get; set; } = "image/png";
+    [Parameter] public byte[] Image { get; set; }
+    [Parameter] public byte[] Overlay { get; set; }
+
+    private string ImageObjectUrl;
+    private string OverlayObjectUrl;
+
+    private readonly Lazy<Task<IJSObjectReference>> moduleTask;
+    private readonly Lazy<Task<IJSUnmarshalledObjectReference>> unmarshalledModuleTask;
+
+    public ScannedImage()
+    {
+        // deferred loading of scanner JavaScript lib
+        moduleTask = new (() => IJSRuntime.InvokeAsync<IJSObjectReference>(
+            "import", "./_content/HighlandFarm.Blazor.BarcodeScanner/tslib.esm.min.js").AsTask());
+        unmarshalledModuleTask = new (async () => SimpleQuaggaInterop.GetUnmarshalledModule(IJSRuntime, await moduleTask.Value));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ImageObjectUrl = (await unmarshalledModuleTask.Value).InvokeUnmarshalled<string, byte[], string>("BlobHelper.buildObjectURLUnmarshalled", ContentType, Image);
+        OverlayObjectUrl = (await unmarshalledModuleTask.Value).InvokeUnmarshalled<string, byte[], string>("BlobHelper.buildObjectURLUnmarshalled", ContentType, Overlay);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (moduleTask.IsValueCreated)
+        {
+            var module = await moduleTask.Value;
+            await module.DisposeAsync();
+        }
+    }
+}

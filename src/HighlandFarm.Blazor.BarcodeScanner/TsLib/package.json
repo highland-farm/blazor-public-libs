@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "build": "tsc && esbuild BarcodeScanner.ts --bundle --minify --sourcemap --target=es2015 --platform=browser --format=esm --outfile=../wwwroot/tslib.esm.min.js"
+    "build": "tsc && esbuild index.ts --bundle --minify --sourcemap --target=es2018 --platform=browser --format=esm --outfile=../wwwroot/tslib.esm.min.js"
   },
   "devDependencies": {
     "esbuild": "^0.11.14",
