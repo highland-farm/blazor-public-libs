@@ -1,0 +1,49 @@
+@inherits JsComponentBase
+
+<div class="container">
+    @* Insert image if provided *@
+    @if (!string.IsNullOrEmpty(@ImageObjectUrl)) {
+        <img src="@ImageObjectUrl" onload="(() => window.URL.revokeObjectURL(this.src))()" />
+    }
+
+    @* Insert overlay if provided (CSS positioned on top of image) *@
+    @if (!string.IsNullOrEmpty(@OverlayObjectUrl)) {
+        <img src="@OverlayObjectUrl" class="overlay" onload="(() => window.URL.revokeObjectURL(this.src))()" />
+    }
+</div>
+
+@code {
+
+    [Parameter] public byte[] Image { get; set; }
+    private byte[] _image;
+
+    [Parameter] public byte[] Overlay { get; set; }
+    private byte[] _overlay;
+
+    // for now only support the default
+    private static readonly string ContentType = "image/png";
+
+    // blob URLs (internal browser identifiers for img src)
+    private string ImageObjectUrl;
+    private string OverlayObjectUrl;
+
+    // call into JS to build an object URL from a byte[] in an efficient manner
+    private async ValueTask<string> GetObjectUrl(byte[] blob) =>
+        await JsLib.CallJsUnmarshalled<string, byte[], string>("BlobHelper.buildObjectURLUnmarshalled", ContentType, blob);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // create new blob URLs if they are changed
+        // for example this could support a scan carousel without having to recreate the component
+        if (_image != Image)
+        {
+            ImageObjectUrl = await GetObjectUrl(Image);
+            _image = Image;
+        }
+        if (_overlay != Overlay)
+        {
+            OverlayObjectUrl = await GetObjectUrl(Overlay);
+            _overlay = Overlay;
+        }
+    }
+}

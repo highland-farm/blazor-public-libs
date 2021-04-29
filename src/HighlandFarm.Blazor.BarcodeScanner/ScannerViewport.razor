@@ -1,5 +1,4 @@
-@inject IJSRuntime IJSRuntime
-@implements IAsyncDisposable
+@inherits JsComponentBase
 
 <div id="@ViewportId" class="viewport" @ref="ViewportElem"></div>
 
@@ -7,30 +6,23 @@
     [Parameter] public bool AutoStart { get; set; } = false;
     [Parameter] public bool Visible { get; set; } = true;
 
-    private string ViewportId = $"e{Guid.NewGuid().ToString("N")}";
+    // auto generate an ID for the viewport div (it is required for current SimpleQuagga)
+    private string ViewportId = $"e-{Guid.NewGuid().ToString("N")}";
+
+    // reference to the viewport to pass in to SimpleQuagga init
     private ElementReference ViewportElem;
 
     private bool _visible;
 
-    private SimpleQuaggaInterop Scanner;
+    public async ValueTask Start() => await JsLib.CallJsVoid("SimpleQuaggaWrapper.start");
 
-    public async Task Start() => await Scanner.Start();
+    public async ValueTask Stop() => await JsLib.CallJsVoid("SimpleQuaggaWrapper.stop");
 
-    public async Task Stop() => await Scanner.Stop();
+    public async ValueTask<string> ScanCodeAsync(string scanId = null) => await JsLib.CallJs<string>("SimpleQuaggaWrapper.scanCode", scanId);
 
-    public async Task<string> ScanCodeAsync()
-    {
-        if (Scanner == null)
-            return null;
-        return await Scanner.ScanCode();
-    }
+    public async ValueTask<byte[]> GetImageAsync(string scanId) => await JsLib.CallJsUnmarshalled<string, byte[]>("SimpleQuaggaWrapper.getImageUnmarshalled", scanId);
 
-    public async Task<byte[]> GetImageAsync()
-    {
-        if (Scanner == null)
-            return null;
-        return await Scanner.GetImage();
-    }
+    public async ValueTask<byte[]> GetOverlayAsync(string scanId) => await JsLib.CallJsUnmarshalled<string, byte[]>("SimpleQuaggaWrapper.getOverlayUnmarshalled", scanId);
 
     protected override void OnInitialized()
     {
@@ -39,13 +31,14 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        // update visibility if the visible param changes
         if (_visible != Visible)
         {
             _visible = Visible;
             if (Visible)
-                await Scanner.Show();
+                await JsLib.CallJsVoid("SimpleQuaggaWrapper.show");
             else
-                await Scanner.Hide();
+                await JsLib.CallJsVoid("SimpleQuaggaWrapper.hide");
         }
     }
 
@@ -53,20 +46,20 @@
     {
         if (firstRender)
         {
-            Scanner = new SimpleQuaggaInterop(IJSRuntime);
-            await Scanner.Init(ViewportElem);
+            await JsLib.CallJsVoid("SimpleQuaggaWrapper.init", ViewportElem);
 
             // update if default JS state is different than initial params
             if (!Visible)
-                await Scanner.Hide();
+                await JsLib.CallJsVoid("SimpleQuaggaWrapper.hide");
             if (AutoStart)
-                await Scanner.Start();
+                await Start();
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
-        await Scanner.DisposeAsync();
-        Scanner = null;
+        if (JsLib != null)
+            await Stop();
+        await base.DisposeAsync();
     }
 }
