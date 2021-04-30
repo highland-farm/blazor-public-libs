@@ -3,7 +3,7 @@ import {
   BarcodeScanner,
   ReaderType,
   ScanResult,
-} from "@highlandfarm/simple-quagga";
+} from "@highland-farm/simple-quagga";
 
 let scanner: BarcodeScanner | undefined = undefined;
 
