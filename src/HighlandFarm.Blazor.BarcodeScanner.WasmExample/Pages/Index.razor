@@ -1,0 +1,110 @@
+@page "/"
+
+<p>
+    @* Button to start or stop video based on current state (disabled if operation in progress) *@
+    <button @onclick="ToggleStartedAsync" disabled="@AwaitingStartStop">@(Started ? "Stop Video" : "Start Video")</button>
+
+    @* Button to toggle visibility of realtime viewport *@
+    <button @onclick="() => Visible ^= true">@(Visible ? "Hide Video" : "Show Video")</button>
+
+    @* Button to request a scan (disabled if not started or scan in progress) *@
+    <button @onclick="ScanCodeAsync" disabled="@(Scanning || !Started)">Scan Code</button>
+
+    @* Status output from scanner *@
+    <span>@Status</span>
+</p>
+<div class="viewport-container">
+    <ScannerViewport @ref="Viewport" Visible="@Visible" />
+</div>
+
+@* Display all scans *@
+@foreach (var result in ScanResults)
+{
+    <div style="width: 320px; margin-top: 10px">
+        @(result.Code)<br />
+
+        @* Display the captured scan image w/overlay *@
+        <ImageScan Image="@(result.Image)" Overlay="@(result.Overlay)" />
+    </div>
+}
+
+@code {
+    // state indicating whether camera is started
+    private bool Started = false;
+
+    // state indicating whether a start or stop operation is in progress
+    private bool AwaitingStartStop = false;
+
+    // state indicating whether the viewport is set to be visible
+    private bool Visible = true;
+
+    // state indicating whether a scan operation is in progress
+    private bool Scanning = false;
+
+    private class ScanResult
+    {
+        public string Code;
+        public byte[] Image;
+        public byte[] Overlay;
+    }
+    private List<ScanResult> ScanResults = new List<ScanResult>();
+
+    private async Task ToggleStartedAsync()
+    {
+        try
+        {
+            // set operation in progress
+            AwaitingStartStop = true;
+
+            // start or stop and wait for operation to complete
+            await (Started ? Viewport.Stop() : Viewport.Start());
+
+            // flip state after successful operation
+            Started ^= true;
+        }
+        finally
+        {
+            // always reset to start/stop operation not in progress
+            AwaitingStartStop = false;
+        }
+    }
+
+    // viewport component reference
+    private ScannerViewport Viewport;
+
+    // displayed status string
+    private string Status = "No scan yet.";
+
+    private async Task ScanCodeAsync()
+    {
+        Status = "Scanning...";
+        Scanning = true;
+
+        try
+        {
+            // temporary id to retrieve images after scan
+            var scanId = Guid.NewGuid().ToString("N");
+
+            // request and wait for scan (and set status after)
+            var code = Status = await Viewport.ScanCodeAsync(scanId);
+
+            // request and wait for captured image/overlay
+            var image = await Viewport.GetImageAsync(scanId);
+            var overlay = await Viewport.GetOverlayAsync(scanId);
+
+            // add results to internal list
+            ScanResults.Add(new ScanResult { Code = code, Image = image, Overlay = overlay });
+        }
+        catch (JSException ex)
+        {
+            // show exception in status
+            // FIXME: find a way to exclude the call stack and only show message from JS Error object
+            Status = ex.Message;
+        }
+        finally
+        {
+            // always reset scanning state after success or failure
+            Scanning = false;
+        }
+    }
+}

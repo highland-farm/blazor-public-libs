@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <TsLibRoot>TsLib\</TsLibRoot>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(TsLibRoot)node_modules\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.5" />
+    <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="5.0.5" />
+  </ItemGroup>
+
+  <!-- Package settings -->
+  <PropertyGroup>
+    <PackageId>HighlandFarm.Blazor.BarcodeScanner</PackageId>
+    <Version>0.1.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Company>Highland Farm</Company>
+    <Authors>Josh Storz</Authors>
+  </PropertyGroup>
+
+  <!-- Node check based on: https://gist.github.com/keeed/3003ee1509df1ca1eeb6d15a5fe52f8f -->
+  <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(TsLibRoot)node_modules') ">
+    <!-- Ensure Node.js is installed -->
+    <Exec Command="node --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec WorkingDirectory="$(TsLibRoot)" Command="npm install" />
+  </Target>
+
+  <!-- Rebuild TsLib (to ./wwwroot) every restore; slightly inefficient but this is fast -->
+  <Target Name="BundleTsLib" AfterTargets="Restore">
+    <Exec WorkingDirectory="$(TsLibRoot)" Command="npm install" />
+    <Exec WorkingDirectory="$(TsLibRoot)" Command="npm link @highlandfarm/simple-quagga" />
+    <Exec WorkingDirectory="$(TsLibRoot)" Command="npm run build" />
+  </Target>
+
+  <!-- Clean TsLib outputs -->
+  <Target Name="CleanTsLib" BeforeTargets="Clean">
+    <ItemGroup>
+      <FilesToClean Include="./wwwroot/tslib.esm.min.js" />
+      <FilesToClean Include="./wwwroot/tslib.esm.min.js.map" />
+    </ItemGroup>
+    <Delete Files="@(FilesToClean)" />
+  </Target>
+
+  <!-- Exclude everything in TsLib since that build is handled separately-->
+  <ItemGroup>
+    <Content Remove="$(TsLibRoot)**" />
+    <None Remove="$(TsLibRoot)**" />
+    <None Include="$(TsLibRoot)**" Exclude="$(TsLibRoot)node_modules\**" />
+    <Watch Remove="$(TsLibRoot)**" />
+  </ItemGroup>
+
+</Project>

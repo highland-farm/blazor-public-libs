@@ -1,0 +1,12 @@
+.container {
+  width: 100%;
+  display: flex;
+}
+
+.container img {
+  width: 100%;
+}
+
+.container img.overlay {
+  margin-left: -100%;
+}

@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "tsc && esbuild index.ts --bundle --minify --sourcemap --target=es2018 --platform=browser --format=esm --outfile=../wwwroot/tslib.esm.min.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.11.14",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "@highland-farm/simple-quagga": "^0.1.0"
+  }
+}
