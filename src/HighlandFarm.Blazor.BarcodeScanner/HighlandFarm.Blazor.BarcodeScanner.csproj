@@ -38,7 +38,6 @@
   <!-- Rebuild TsLib (to ./wwwroot) every restore; slightly inefficient but this is fast -->
   <Target Name="BundleTsLib" AfterTargets="Restore">
     <Exec WorkingDirectory="$(TsLibRoot)" Command="npm install" />
-    <Exec WorkingDirectory="$(TsLibRoot)" Command="npm link @highlandfarm/simple-quagga" />
     <Exec WorkingDirectory="$(TsLibRoot)" Command="npm run build" />
   </Target>
 
