@@ -22,6 +22,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Company>Highland Farm</Company>
     <Authors>Josh Storz</Authors>
+    <PackageDescription>Blazor barcode scanner components.</PackageDescription>
+    <RepositoryUrl>https://github.com/highland-farm/blazor-scanner</RepositoryUrl>
   </PropertyGroup>
 
   <!-- Node check based on: https://gist.github.com/keeed/3003ee1509df1ca1eeb6d15a5fe52f8f -->
