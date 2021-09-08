@@ -64,7 +64,10 @@
     public override async ValueTask DisposeAsync()
     {
         if (JsLib != null)
+        {
             await Stop();
+            await JsLib.CallJsVoid("SimpleQuaggaWrapper.destroy");
+        }
         await base.DisposeAsync();
     }
 }

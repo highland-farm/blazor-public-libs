@@ -26,6 +26,13 @@ export function init(viewport: HTMLElement): void {
 }
 
 /**
+ * Destroy internal BarcodeScanner instance. Caller must stop first!
+ */
+export function destroy(): void {
+  scanner = undefined;
+}
+
+/**
  * Setup scanner and start camera video stream (without locating or detecting).
  * @returns Promise that resolves after camera video stream is running.
  */
@@ -50,8 +57,8 @@ export function show(): void {
 }
 
 interface ImageData {
-  mimeType: string,
-  data: Uint8Array,
+  mimeType: string;
+  data: Uint8Array;
 }
 let images: Record<string, ImageData> = {};
 let overlays: Record<string, ImageData> = {};
@@ -65,7 +72,10 @@ async function packBlob(blob: Blob): Promise<ImageData> {
 declare var BINDING: any;
 
 // remote and return a blob record from an internal record set
-function getBlobUnnmarshalled(scanIdRaw: string, records: Record<string, ImageData>): any {
+function getBlobUnnmarshalled(
+  scanIdRaw: string,
+  records: Record<string, ImageData>
+): any {
   // convert from .NET to JS string
   const scanId = BINDING.conv_string(scanIdRaw);
 
@@ -113,10 +123,14 @@ export async function scanCode(scanId?: string): Promise<string | undefined> {
   // capture and transfer blobs (image & overlay) into internal record sets, if requested
   let blobPromises = [];
   if (scanId && r.image) {
-    blobPromises.push(r.image.then(packBlob).then((v: ImageData) => images[scanId] = v));
+    blobPromises.push(
+      r.image.then(packBlob).then((v: ImageData) => (images[scanId] = v))
+    );
   }
   if (scanId && r.overlay) {
-    blobPromises.push(r.overlay.then(packBlob).then((v: ImageData) => overlays[scanId] = v));
+    blobPromises.push(
+      r.overlay.then(packBlob).then((v: ImageData) => (overlays[scanId] = v))
+    );
   }
   await Promise.all(blobPromises);
 
