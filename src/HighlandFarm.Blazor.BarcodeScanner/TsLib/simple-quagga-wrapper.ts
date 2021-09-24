@@ -11,18 +11,28 @@ let scanner: BarcodeScanner | undefined = undefined;
  * Initialize internal SimpleQuagga BarcodeScanner.
  * @param viewport Viewport element reference, ex. a container div.
  */
-export function init(viewport: HTMLElement): void {
+export function init(
+  viewport: HTMLElement,
+  dotNetHelper: DotNet.DotNetObject | undefined
+): void {
   if (scanner) {
     return;
   }
 
-  scanner = new BarcodeScannerBuilder(viewport)
+  let builder = new BarcodeScannerBuilder(viewport)
     .addReader(ReaderType.CODE_128)
     .withResultImages()
     .withDrawLocated()
     .withDrawDetected()
-    .withDrawScanline()
-    .build();
+    .withDrawScanline();
+
+  if (dotNetHelper) {
+    builder = builder.withCodeValidator((code) =>
+      dotNetHelper.invokeMethod<boolean>("ValidateCode", code)
+    );
+  }
+
+  scanner = builder.build();
 }
 
 /**

@@ -9,6 +9,9 @@
     // scanner init callback after component is initialized; first UI render is required for scanner to function
     [Parameter] public EventCallback OnScannerInit { get; set; }
 
+    // callback to validate scan format
+    [Parameter] public Func<string, bool> ValidatorCallback { get; set; }
+
     // auto generate an ID for the viewport div (it is required for current SimpleQuagga)
     private string ViewportId = $"e-{Guid.NewGuid().ToString("N")}";
 
@@ -16,6 +19,8 @@
     private ElementReference ViewportElem;
 
     private bool _visible;
+
+    private DotNetObjectReference<ScannerViewport> jsObjRef = null;
 
     public async ValueTask Start() => await JsLib.CallJsVoid("SimpleQuaggaWrapper.start");
 
@@ -26,6 +31,15 @@
     public async ValueTask<byte[]> GetImageAsync(string scanId) => await JsLib.CallJsUnmarshalled<string, byte[]>("SimpleQuaggaWrapper.getImageUnmarshalled", scanId);
 
     public async ValueTask<byte[]> GetOverlayAsync(string scanId) => await JsLib.CallJsUnmarshalled<string, byte[]>("SimpleQuaggaWrapper.getOverlayUnmarshalled", scanId);
+    
+    [JSInvokable]
+    public bool ValidateCode(string code)
+    {
+        if (ValidatorCallback == null)
+            return true;
+
+        return ValidatorCallback(code);
+    }
 
     protected override void OnInitialized()
     {
@@ -49,7 +63,8 @@
     {
         if (firstRender)
         {
-            await JsLib.CallJsVoid("SimpleQuaggaWrapper.init", ViewportElem);
+            jsObjRef = DotNetObjectReference.Create(this);
+            await JsLib.CallJsVoid("SimpleQuaggaWrapper.init", ViewportElem, jsObjRef);
 
             // update if default JS state is different than initial params
             if (!Visible)
@@ -68,6 +83,7 @@
             await Stop();
             await JsLib.CallJsVoid("SimpleQuaggaWrapper.destroy");
         }
+        jsObjRef?.Dispose();
         await base.DisposeAsync();
     }
 }
