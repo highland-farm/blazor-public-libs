@@ -31,7 +31,11 @@
 
     public async ValueTask<string> ScanCodeAsync(string scanId = null) => await JsLib.CallJs<string>("SimpleQuaggaWrapper.scanCode", scanId);
 
+    public async ValueTask<string> GetImageTypeAsync(string scanId = null) => await JsLib.CallJs<string>("SimpleQuaggaWrapper.getImageType", scanId);
+
     public async ValueTask<byte[]> GetImageAsync(string scanId) => await JsLib.CallJsUnmarshalled<string, byte[]>("SimpleQuaggaWrapper.getImageUnmarshalled", scanId);
+    
+    public async ValueTask<string> GetOverlayTypeAsync(string scanId = null) => await JsLib.CallJs<string>("SimpleQuaggaWrapper.getOverlayType", scanId);
 
     public async ValueTask<byte[]> GetOverlayAsync(string scanId) => await JsLib.CallJsUnmarshalled<string, byte[]>("SimpleQuaggaWrapper.getOverlayUnmarshalled", scanId);
     
