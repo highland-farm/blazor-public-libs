@@ -103,12 +103,30 @@ function getBlobUnnmarshalled(
 }
 
 /**
+ * Get the type of an image.
+ * @param scanId Temporary ID passed to scanCode method when scan was requested.
+ * @returns Image type (ex. 'image/png'), or undefined if not found.
+ */
+export function getImageType(scanId: string): string | undefined {
+  return images[scanId]?.mimeType;
+}
+
+/**
  * Get an image blob using Blazor unmarshalled interop for better performance.
  * @param scanId Temporary ID passed to scanCode method when scan was requested.
  * @returns Blob bytes as a .NET byte array, or undefined if not found.
  */
 export function getImageUnmarshalled(scanId: string): any {
   return getBlobUnnmarshalled(scanId, images);
+}
+
+/**
+ * Get the type of an overlay.
+ * @param scanId Temporary ID passed to scanCode method when scan was requested.
+ * @returns Overlay type (ex. 'image/png'), or undefined if not found.
+ */
+export function getOverlayType(scanId: string): string | undefined {
+  return overlays[scanId]?.mimeType;
 }
 
 /**

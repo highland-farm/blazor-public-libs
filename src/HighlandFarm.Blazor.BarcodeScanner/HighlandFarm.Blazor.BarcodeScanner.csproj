@@ -18,7 +18,7 @@
   <!-- Package settings -->
   <PropertyGroup>
     <PackageId>HighlandFarm.Blazor.BarcodeScanner</PackageId>
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Company>Highland Farm</Company>
     <Authors>Josh Storz</Authors>
