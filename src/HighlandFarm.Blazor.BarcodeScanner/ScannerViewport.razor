@@ -5,6 +5,9 @@
 @code {
     [Parameter] public bool AutoStart { get; set; } = false;
     [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public bool CaptureImages { get; set; } = true;
+    [Parameter] public string ImageType { get; set; } = "image/png";
+    [Parameter] public float ImageQuality { get; set; } = 1.0F;
 
     // scanner init callback after component is initialized; first UI render is required for scanner to function
     [Parameter] public EventCallback OnScannerInit { get; set; }
@@ -64,7 +67,7 @@
         if (firstRender)
         {
             jsObjRef = DotNetObjectReference.Create(this);
-            await JsLib.CallJsVoid("SimpleQuaggaWrapper.init", ViewportElem, jsObjRef);
+            await JsLib.CallJsVoid("SimpleQuaggaWrapper.init", ViewportElem, CaptureImages, jsObjRef, ImageType, ImageQuality);
 
             // update if default JS state is different than initial params
             if (!Visible)

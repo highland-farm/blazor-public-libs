@@ -13,7 +13,10 @@ let scanner: BarcodeScanner | undefined = undefined;
  */
 export function init(
   viewport: HTMLElement,
-  dotNetHelper: DotNet.DotNetObject | undefined
+  captureImages?: boolean,
+  dotNetHelper?: DotNet.DotNetObject,
+  imagesType?: string,
+  imagesQuality?: number
 ): void {
   if (scanner) {
     return;
@@ -21,7 +24,7 @@ export function init(
 
   let builder = new BarcodeScannerBuilder(viewport)
     .addReader(ReaderType.CODE_128)
-    .withResultImages()
+    .withResultImages(captureImages, imagesType, imagesQuality)
     .withDrawLocated()
     .withDrawDetected()
     .withDrawScanline();
