@@ -9,6 +9,6 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@highland-farm/simple-quagga": "^0.1.2"
+    "@highland-farm/simple-quagga": "^0.1.3"
   }
 }
