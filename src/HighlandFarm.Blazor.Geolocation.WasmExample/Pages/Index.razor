@@ -1,0 +1,16 @@
+@page "/"
+@inject GeolocationService Geo
+
+@geo
+
+<br /><br />
+<input type="button" @onclick="test" value="Request Position" />
+
+@code {
+    private string geo;
+
+    private async Task test()
+    {
+        geo = (await Geo.GetCurrentPosition(true, TimeSpan.FromMilliseconds(-1), TimeSpan.Zero)).ToString();
+    }
+}
