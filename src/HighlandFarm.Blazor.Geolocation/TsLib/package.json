@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "tsc && esbuild index.ts --bundle --minify --sourcemap --target=es2018 --platform=browser --format=esm --outfile=../wwwroot/tslib.esm.min.js"
+  },
+  "devDependencies": {
+    "@types/blazor__javascript-interop": "^3.1.2",
+    "esbuild": "^0.11.14",
+    "typescript": "^4.2.4"
+  }
+}

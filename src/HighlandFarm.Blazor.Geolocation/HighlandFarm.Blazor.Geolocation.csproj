@@ -15,10 +15,10 @@
 
   <!-- Package settings -->
   <PropertyGroup>
-    <PackageId>HighlandFarm.Blazor.BarcodeScanner</PackageId>
-    <Version>0.1.6</Version>
+    <PackageId>HighlandFarm.Blazor.Geolocation</PackageId>
+    <Version>0.1.0</Version>
     <Authors>Josh Storz</Authors>
-    <PackageDescription>Blazor barcode scanner components.</PackageDescription>
+    <PackageDescription>Blazor geolocation service and components.</PackageDescription>
   </PropertyGroup>
 
   <Import Project="../Common/NugetPkg.props" />

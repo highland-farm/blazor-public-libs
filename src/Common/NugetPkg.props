@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Company>Highland Farm</Company>
+    <RepositoryUrl>https://github.com/highland-farm/blazor-public-libs</RepositoryUrl>
+  </PropertyGroup>
+</Project>
