@@ -15,11 +15,14 @@ namespace HighlandFarm.Blazor.Geolocation
         public double? Heading { get; init; }
         public double? Speed { get; init; }
 
-        public DateTime? DateTime
-        {
-            get => Timestamp.HasValue
-                        ? new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc) + TimeSpan.FromMilliseconds(Timestamp.Value)
-                        : null;
-        }
+        public bool IsError => ErrorCode != null;
+        public DateTime? DateTime =>
+            Timestamp.HasValue
+                ? new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc) + TimeSpan.FromMilliseconds(Timestamp.Value)
+                : null;
+        public string GMapsUrl =>
+            (!IsError & Latitude.HasValue && Longitude.HasValue)
+                ? $"https://www.google.com/maps/search/?api=1&query={Latitude},{Longitude}"
+                : null;
     }
 }

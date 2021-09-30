@@ -1,16 +1,32 @@
 @page "/"
 @inject GeolocationService Geo
 
-@geo
+<ul>
+    <li>Timestamp: @geo?.DateTime?.ToLocalTime()</li>
+    <li>Error code: @geo?.ErrorCode</li>
+    <li>Error message: @geo?.ErrorMessage</li>
+    <li>Latitude: @(geo?.Latitude?.ToString("F3"))&deg;</li>
+    <li>Longitude: @(geo?.Longitude?.ToString("F3"))&deg;</li>
+    <li>Accuracy: @(geo?.Accuracy?.ToString("F3"))m</li>
+    <li>Altitude: @(geo?.Altitude?.ToString("F3"))m</li>
+    <li>Altitude accuracy: @(geo?.AltitudeAccuracy?.ToString("F3"))m</li>
+    <li>Heading: @(geo?.Heading?.ToString("F3"))&deg;</li>
+    <li>Speed: @(geo?.Speed?.ToString("F3"))m/s</li>
+</ul>
 
-<br /><br />
-<input type="button" @onclick="test" value="Request Position" />
+<input type="button" onclick="window.open('@geo?.GMapsUrl', '_blank'); return false" value="Open Google Maps" disabled="@(geo?.GMapsUrl == null)" />
+<input type="button" @onclick="Refresh" value="Refresh Position" />
 
 @code {
-    private string geo;
+    private GeoPosition geo;
 
-    private async Task test()
+    private async Task Refresh()
     {
-        geo = (await Geo.GetCurrentPosition(true, TimeSpan.FromMilliseconds(-1), TimeSpan.Zero)).ToString();
+        geo = await Geo.GetCurrentPosition(true, TimeSpan.FromMilliseconds(-1), TimeSpan.Zero);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
     }
 }
